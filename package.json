@@ -4,5 +4,8 @@
   "private": true,
   "engines": {
     "node": ">=18"
+  },
+  "scripts": {
+    "start": "node api/server.js"
   }
 }
