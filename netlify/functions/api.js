@@ -1,8 +1,10 @@
 const crypto = require('crypto');
 const https = require('https');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const { getConfig } = require('./config');
+const _cfg = getConfig();
+const SUPABASE_URL = _cfg.url;
+const SUPABASE_KEY = _cfg.key;
 
 function supaRequest(path, method, body) {
   return new Promise((resolve, reject) => {
