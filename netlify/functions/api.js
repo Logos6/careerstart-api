@@ -10,16 +10,17 @@ function supaRequest(path, method, body) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, SUPABASE_URL);
     const data = body ? JSON.stringify(body) : null;
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    };
+    if (method === 'POST') headers['Prefer'] = 'return=representation';
     const opts = {
       hostname: url.hostname,
       path: url.pathname + url.search,
       method,
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : undefined
-      }
+      headers
     };
     if (data) opts.headers['Content-Length'] = Buffer.byteLength(data);
     const req = https.request(opts, (res) => {
