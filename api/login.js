@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: '手机号和密码不能为空' });
     }
 
-    const result = loginUser(phone, password);
+    const result = await loginUser(phone, password);
 
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
