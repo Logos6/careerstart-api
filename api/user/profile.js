@@ -19,7 +19,7 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: '未登录或登录已过期' });
     }
 
-    const result = getUserProfile(phone);
+    const result = await getUserProfile(phone);
 
     if (result.error) {
       return res.status(result.status).json({ error: result.error });
