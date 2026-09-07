@@ -91,11 +91,9 @@ async function registerUser(phone, password, nickname) {
   const user = {
     phone,
     nickname: nickname || `启航用户${phone.slice(-4)}`,
-    password: hashedPwd,
+    password_hash: hashedPwd,
     token,
-    is_vip: false,
-    vip_plan: null,
-    vip_expiry: null,
+    member_type: 'free',
     created_at: new Date().toISOString(),
   };
 
@@ -122,7 +120,7 @@ async function loginUser(phone, password) {
 
   const user = users[0];
   const hashedPwd = hashPassword(password);
-  if (user.password !== hashedPwd) {
+  if (user.password_hash !== hashedPwd) {
     return { error: '密码错误', status: 401 };
   }
 
@@ -138,7 +136,7 @@ async function loginUser(phone, password) {
     success: true,
     token,
     user: {
-      phone, nickname: user.nickname, isVip: user.is_vip,
+      phone, nickname: user.nickname, isVip: user.member_type === 'vip',
       vipPlan: user.vip_plan, vipExpiry: user.vip_expiry,
     },
   };
@@ -146,7 +144,7 @@ async function loginUser(phone, password) {
 
 // 获取用户信息
 async function getUserProfile(phone) {
-  const users = await supabaseRequest(`users?phone=eq.${phone}&select=phone,nickname,is_vip,vip_plan,vip_expiry,created_at`);
+  const users = await supabaseRequest(`users?phone=eq.${phone}&select=phone,nickname,member_type,vip_plan,vip_expiry,created_at`);
   if (!users || users.length === 0) {
     return { error: '用户不存在', status: 404 };
   }
@@ -155,7 +153,7 @@ async function getUserProfile(phone) {
   return {
     success: true,
     user: {
-      phone: user.phone, nickname: user.nickname, isVip: user.is_vip,
+      phone: user.phone, nickname: user.nickname, isVip: user.member_type === 'vip',
       vipPlan: user.vip_plan, vipExpiry: user.vip_expiry, createdAt: user.created_at,
     },
   };
