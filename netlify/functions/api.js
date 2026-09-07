@@ -165,5 +165,38 @@ exports.handler = async (event) => {
     return json(200, { ok: true, user: res.data[0] });
   }
 
+  // 记录访客
+  if (path === '/api/hit' && method === 'POST') {
+    const body = parseBody(event);
+    const { page, referrer, user_agent } = body;
+    const ip = event.headers['x-forwarded-for'] || event.headers['client-ip'] || '';
+    const ip_hash = crypto.createHash('sha256').update(ip.split(',')[0].trim()).digest('hex').slice(0, 16);
+
+    await supaRequest('/rest/v1/visits', 'POST', {
+      page: page || '/',
+      referrer: referrer || '',
+      user_agent: user_agent || '',
+      ip_hash
+    });
+
+    // 查询总访问量
+    const countRes = await supaRequest('/rest/v1/visits?select=id', 'GET');
+    const total = Array.isArray(countRes.data) ? countRes.data.length : 0;
+
+    return json(200, { ok: true, total });
+  }
+
+  // 查看访问统计
+  if (path === '/api/stats' && method === 'GET') {
+    const all = await supaRequest('/rest/v1/visits?select=page,created_at&order=created_at.desc&limit=1000', 'GET');
+    const visits = Array.isArray(all.data) ? all.data : [];
+
+    const today = new Date().toISOString().slice(0, 10);
+    const todayCount = visits.filter(v => v.created_at && v.created_at.startsWith(today)).length;
+    const totalCount = visits.length;
+
+    return json(200, { ok: true, total: totalCount, today: todayCount, recent: visits.slice(0, 20) });
+  }
+
   return json(404, { error: 'Not Found: ' + path });
 };
